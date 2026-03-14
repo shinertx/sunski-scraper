@@ -4,6 +4,8 @@ This repository contains a collection of Python scripts designed to extract prod
 
 It was primarily developed to work with the Sunski brand (handling complex product variations, acquiring location directories, and querying matrix inventory across all retail stores) but also includes experiments for scraping other retail endpoints.
 
+**[👉 Click Here to Download the Extracted Data & Store Feeds (v1.0.0) 👈](https://github.com/shinertx/sunski-scraper/releases/tag/v1.0.0)**
+
 ## Features
 
 - **Store Location Extraction**: Spawns headless browsers via Playwright to mimic natural requests and gather physical store location codes and coordinates.
@@ -41,6 +43,33 @@ Once you have the localized schema built in step 1, run the inventory checker. T
 python check_inventory_sunski.py
 ```
 *Outputs will be placed in the `store_feeds/` directory.*
+
+### 3. Downloading the Data Directly
+Because the resulting catalog and store feeds are quite large (hundreds of megabytes), they are excluded from this git repository to prevent bloat.
+
+Instead of running the scripts yourself, you can download a `.zip` archive containing the most recent `sunski_catalog.json` and the complete `store_feeds/` directory from the Releases tab:
+[Download Latest Data Release](https://github.com/shinertx/sunski-scraper/releases/tag/v1.0.0)
+
+## Understanding the Output JSON
+If you are looking to extract GTINs (UPCs) and stock levels, you will want to look at the individual JSON files generated inside integer-named files in the `store_feeds/` directory (e.g., `sunski_inventory_17.json`).
+
+Each store feed contains a JSON array of product objects. Inside each product object, look at the `variants` array:
+
+```json
+{
+  "title": "Example Product",
+  "variants": [
+    {
+      "color": "Black",
+      "size": "Medium",
+      "upc": "840000000000",        // <--- THIS IS THE GTIN
+      "inventory": "5",             // <--- THIS IS THE INVENTORY LEVEL FOR THIS SPECIFIC STORE
+      "in_stock": "true",
+      "price": "19.99"
+    }
+  ]
+}
+```
 
 ## Project Structure (Key Files)
 
