@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+kohls_env/
+.venv/
+venv/
+ENV/
+
+# Output Data (too large/noisy for git)
+*.json
+!static_catalog_sample.json
+*.html
+*.log
+store_feeds/
+downloaded_files/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Env variables
+.env
