@@ -6,6 +6,28 @@ It was primarily developed to work with the Sunski brand (handling complex produ
 
 **[👉 Click Here to Download the Extracted Data & Store Feeds (v1.0.0) 👈](https://github.com/shinertx/sunski-scraper/releases/tag/v1.0.0)**
 
+## First Principles Retail Scraper (Kohl's & SunSki)
+
+This repository now contains completely stripped-down, zero-bloat "First Principles" scripts designed to bypass enterprise bot protection (like Akamai) and extract raw local BOPUS (Buy Online Pick Up In Store) inventory.
+
+It is specifically architected to run in **Two Separate Jobs** to maximize efficiency, reduce WAF blocks, and generate data structured perfectly for a SKU Graph database.
+
+### Job 1: The Catalog Graph Builder (Run Weekly)
+**File:** `job1_build_sku_graph.py`
+
+This script takes an array of raw product URLs (which you can dump from the retailer's XML sitemap) and uses an undetected browser to defeat Akamai. Once inside, it rips the JSON state directly out of the page's hidden JavaScript variables.
+* **Output:** A massive JSON file mapping every product to its sub-variants, including Title, Description, Images, Categories, and the exact UPC/GTIN mapping for every color/size. 
+* **Speed:** Slow (Loads full pages).
+* **Usage:** `cat target_urls.json | python3 job1_build_sku_graph.py > jenni_master_catalog.json`
+
+### Job 2: The BOPUS Inventory Pinger (Run Daily)
+**File:** `job2_check_inventory.py`
+
+Once your database has the SKUs from Job 1, you *never load a product webpage again*. This script takes your list of SKUs, clears the Akamai ban *once* on the homepage, and then uses native JavaScript `fetch()` calls inside the browser engine to directly query the backend database for physical store quantities.
+* **Output:** A literal mapping of SKU -> Physical Units in stock at the requested store.
+* **Speed:** Extremely Fast (Bypasses rendering, headless HTTP/2 multiplexing).
+* **Usage:** `cat target_skus.json | python3 job2_check_inventory.py [ZIP_CODE] > daily_inventory.json`
+
 ## Features
 
 - **Store Location Extraction**: Spawns headless browsers via Playwright to mimic natural requests and gather physical store location codes and coordinates.
@@ -20,7 +42,7 @@ It was primarily developed to work with the Sunski brand (handling complex produ
 3. Install the dependencies. You may wish to use a virtual environment.
 
 ```bash
-pip install aiohttp playwright bs4 lxml
+pip install aiohttp playwright bs4 lxml seleniumbase
 playwright install chromium
 ```
 
@@ -73,11 +95,10 @@ Each store feed contains a JSON array of product objects. Inside each product ob
 
 ## Project Structure (Key Files)
 
-- `build_catalog_sunski.py` — The core crawler building the product schema from the sitemap.
+- `job1_build_sku_graph.py` — The first-principles catalog builder for Kohl's architecture targeting the Jenni SKU Graph.
+- `job2_check_inventory.py` — The blazing fast headless native API injection script for checking Kohl's BOPUS limits.
+- `build_catalog_sunski.py` — The core crawler building the product schema from the Sun & Ski sitemap.
 - `check_inventory_sunski.py` — The fast, asynchronous matrix inventory fetcher mapping variants against Kibo Commerce APIs.
-- `sitemap_extractor_sunski.py` / `product_scraper_sunski.py` — Utility scripts for specific extraction tasks.
-
-*(Other files like `test_*.py` and `*kohl*.py` are experimental or test harness files targeting specific headless capabilities or logic validation.)*
 
 ---
 **Disclaimer**: This is a proof-of-concept repository. It is intended for educational purposes or authorized integrations. Ensure you are respecting standard rate limits, terms of service, and utilizing organic headers/cookies where possible.
